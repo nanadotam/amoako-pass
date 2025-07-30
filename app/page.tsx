@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useToast } from "@/hooks/use-toast"
 import { PasswordGenerator } from "@/components/password-generator"
+import { PasswordDetailModal } from "@/components/password-detail-modal"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 const mockPasswords = [
@@ -21,6 +22,28 @@ const mockPasswords = [
     category: "Development",
     favicon: "https://github.com/favicon.ico",
     lastUsed: "2 hours ago",
+    createdAt: "2024-01-15",
+    updatedAt: "2024-12-20",
+    usageCount: 247,
+    securityScore: 92,
+    passwordAge: 45,
+    notes: "Work development account with 2FA enabled",
+    tags: ["work", "development", "important"],
+    isCompromised: false,
+    twoFactorEnabled: true,
+    url: "https://github.com",
+    alternativeEmails: ["john.work@company.com"],
+    securityQuestions: [
+      { question: "What was your first pet's name?", answer: "Buddy" },
+      { question: "What city were you born in?", answer: "New York" }
+    ],
+    loginHistory: [
+      { date: "Dec 20, 2024", location: "San Francisco, CA", device: "MacBook Pro", successful: true },
+      { date: "Dec 19, 2024", location: "San Francisco, CA", device: "iPhone 15", successful: true },
+      { date: "Dec 18, 2024", location: "New York, NY", device: "MacBook Pro", successful: true },
+      { date: "Dec 17, 2024", location: "Unknown", device: "Windows PC", successful: false },
+      { date: "Dec 16, 2024", location: "San Francisco, CA", device: "MacBook Pro", successful: true }
+    ]
   },
   {
     id: 2,
@@ -30,6 +53,25 @@ const mockPasswords = [
     category: "Email",
     favicon: "https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico",
     lastUsed: "1 day ago",
+    createdAt: "2023-06-10",
+    updatedAt: "2024-11-15",
+    usageCount: 892,
+    securityScore: 78,
+    passwordAge: 193,
+    notes: "Primary email account",
+    tags: ["personal", "email", "important"],
+    isCompromised: false,
+    twoFactorEnabled: true,
+    url: "https://gmail.com",
+    alternativeEmails: [],
+    securityQuestions: [
+      { question: "What is your mother's maiden name?", answer: "Johnson" }
+    ],
+    loginHistory: [
+      { date: "Dec 19, 2024", location: "San Francisco, CA", device: "iPhone 15", successful: true },
+      { date: "Dec 19, 2024", location: "San Francisco, CA", device: "MacBook Pro", successful: true },
+      { date: "Dec 18, 2024", location: "San Francisco, CA", device: "MacBook Pro", successful: true }
+    ]
   },
   {
     id: 3,
@@ -39,6 +81,23 @@ const mockPasswords = [
     category: "Entertainment",
     favicon: "https://assets.nflxext.com/us/ffe/siteui/common/icons/nficon2023.ico",
     lastUsed: "3 days ago",
+    createdAt: "2024-03-20",
+    updatedAt: "2024-03-20",
+    usageCount: 156,
+    securityScore: 85,
+    passwordAge: 275,
+    notes: "Family subscription account",
+    tags: ["entertainment", "family"],
+    isCompromised: false,
+    twoFactorEnabled: false,
+    url: "https://netflix.com",
+    alternativeEmails: ["family@doe.com"],
+    securityQuestions: [],
+    loginHistory: [
+      { date: "Dec 17, 2024", location: "San Francisco, CA", device: "Apple TV", successful: true },
+      { date: "Dec 15, 2024", location: "San Francisco, CA", device: "iPad", successful: true },
+      { date: "Dec 12, 2024", location: "Los Angeles, CA", device: "Smart TV", successful: true }
+    ]
   },
   {
     id: 4,
@@ -48,6 +107,26 @@ const mockPasswords = [
     category: "Shopping",
     favicon: "https://www.amazon.com/favicon.ico",
     lastUsed: "1 week ago",
+    createdAt: "2022-11-05",
+    updatedAt: "2024-08-10",
+    usageCount: 445,
+    securityScore: 68,
+    passwordAge: 410,
+    notes: "Shopping account with saved payment methods",
+    tags: ["shopping", "frequent"],
+    isCompromised: false,
+    twoFactorEnabled: false,
+    url: "https://amazon.com",
+    alternativeEmails: [],
+    securityQuestions: [
+      { question: "What was the name of your first school?", answer: "Lincoln Elementary" },
+      { question: "What is your favorite movie?", answer: "The Matrix" }
+    ],
+    loginHistory: [
+      { date: "Dec 13, 2024", location: "San Francisco, CA", device: "iPhone 15", successful: true },
+      { date: "Dec 10, 2024", location: "San Francisco, CA", device: "MacBook Pro", successful: true },
+      { date: "Dec 8, 2024", location: "San Francisco, CA", device: "iPad", successful: true }
+    ]
   },
 ]
 
@@ -59,6 +138,8 @@ export default function Dashboard() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list")
   const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set())
   const [showGenerator, setShowGenerator] = useState(false)
+  const [selectedPassword, setSelectedPassword] = useState<typeof mockPasswords[0] | null>(null)
+  const [showPasswordDetail, setShowPasswordDetail] = useState(false)
   const { toast } = useToast()
 
   const togglePasswordVisibility = (id: number) => {
@@ -85,6 +166,29 @@ export default function Dashboard() {
         variant: "destructive",
       })
     }
+  }
+
+  const handlePasswordClick = (password: typeof mockPasswords[0]) => {
+    setSelectedPassword(password)
+    setShowPasswordDetail(true)
+    // Increment usage count (in real app, this would be handled by backend)
+    password.usageCount += 1
+  }
+
+  const handleEditPassword = (password: typeof mockPasswords[0]) => {
+    // Navigate to edit page or open edit modal
+    toast({
+      title: "Edit Password",
+      description: "Edit functionality would be implemented here",
+    })
+  }
+
+  const handleDeletePassword = (passwordId: number) => {
+    // Delete password (in real app, this would be handled by backend)
+    toast({
+      title: "Delete Password",
+      description: "Delete functionality would be implemented here",
+    })
   }
 
   const filteredPasswords = mockPasswords.filter((password) => {
@@ -172,7 +276,7 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <Card className="hover:shadow-md transition-shadow">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => handlePasswordClick(password)}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -191,20 +295,32 @@ export default function Dashboard() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
                           <MoreHorizontal className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>Delete</DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditPassword(password); }}>
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeletePassword(password.id); }}>
+                          Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Badge variant="secondary">{password.category}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">{password.category}</Badge>
+                      {password.twoFactorEnabled && (
+                        <Badge variant="outline" className="text-xs text-green-600">2FA</Badge>
+                      )}
+                      {password.isCompromised && (
+                        <Badge variant="destructive" className="text-xs">Risk</Badge>
+                      )}
+                    </div>
                     <span className="text-xs text-muted-foreground">{password.lastUsed}</span>
                   </div>
 
@@ -212,12 +328,17 @@ export default function Dashboard() {
                     <div className="flex-1 font-mono text-sm bg-muted rounded px-3 py-2">
                       {visiblePasswords.has(password.id) ? password.password : "••••••••••••"}
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => togglePasswordVisibility(password.id)}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); togglePasswordVisibility(password.id); }}>
                       {visiblePasswords.has(password.id) ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => copyToClipboard(password.password, "Password")}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); copyToClipboard(password.password, "Password"); }}>
                       <Copy className="size-4" />
                     </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Used {password.usageCount} times</span>
+                    <span>Security: {password.securityScore}/100</span>
                   </div>
                 </CardContent>
               </Card>
@@ -233,6 +354,13 @@ export default function Dashboard() {
       </div>
 
       <PasswordGenerator open={showGenerator} onOpenChange={setShowGenerator} />
+      <PasswordDetailModal 
+        password={selectedPassword}
+        open={showPasswordDetail}
+        onOpenChange={setShowPasswordDetail}
+        onEdit={handleEditPassword}
+        onDelete={handleDeletePassword}
+      />
     </div>
   )
 }
