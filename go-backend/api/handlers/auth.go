@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/nanadotam/amoako-pass/go-backend/models"
+	// "github.com/nanadotam/amoako-pass/go-backend/models"
 	"github.com/nanadotam/amoako-pass/go-backend/services"
 	"github.com/nanadotam/amoako-pass/go-backend/storage"
 )
@@ -39,10 +39,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	var hash string
 	err := row.Scan(&id, &hash)
 	if err != nil || !services.CheckPasswordHash(req.Password, hash) {
-		http.Error(w, "Unauthorized", 401)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	token, _ := services.GenerateJWT(id)
+	token, _ := services.GenerateToken(id)
 	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }

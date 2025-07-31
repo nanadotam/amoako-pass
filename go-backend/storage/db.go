@@ -2,7 +2,7 @@ package storage
 
 import (
 	"database/sql"
-	"fmt"
+	// "fmt"
 	"log"
 	"os"
 

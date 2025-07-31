@@ -5,14 +5,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/nanadotam/amoako-pass/api/handlers"
-	"github.com/nanadotam/amoako-pass/storage"
+	"github.com/nanadotam/amoako-pass/go-backend/api/handlers"
+	"github.com/nanadotam/amoako-pass/go-backend/storage"
 )
 
 func main() {
 	fmt.Println("Hello, World!")
 
-	storage.InitDB() // Connect to DB
+	storage.ConnectDB() // Connect to DB
 
 	http.HandleFunc("/api/health", handlers.HealthCheck)
 	http.HandleFunc("/api/register", handlers.Register)
