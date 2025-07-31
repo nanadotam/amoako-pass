@@ -16,7 +16,7 @@ func ConnectDB() {
 	connStr := os.Getenv("DB_URL")
 	var err error
 
-	DB, err := sql.Open("postgres", connStr)
+	DB, err = sql.Open("postgres", connStr)
 
 	if err != nil {
 		log.Fatal("DB connection failed: ", err)
