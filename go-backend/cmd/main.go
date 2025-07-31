@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/nanadotam/amoako-pass/api/handlers"
@@ -9,7 +10,7 @@ import (
 )
 
 func main() {
-	// fmt.Println("Hello, World!")
+	fmt.Println("Hello, World!")
 
 	storage.InitDB() // Connect to DB
 
