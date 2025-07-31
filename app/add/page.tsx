@@ -45,6 +45,7 @@ export default function AddPassword() {
     notes: "",
     url: "",
     twoFactorEnabled: false,
+    isFavorite: false,
     tags: [] as string[],
     alternativeEmails: [] as string[],
     securityQuestions: [] as Array<{ question: string; answer: string }>,
@@ -314,6 +315,20 @@ export default function AddPassword() {
                         value={formData.notes}
                         onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                         rows={3}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="favorite">Add to favorites</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Mark this password as a favorite for quick access
+                        </p>
+                      </div>
+                      <Switch
+                        id="favorite"
+                        checked={formData.isFavorite}
+                        onCheckedChange={(checked) => setFormData({ ...formData, isFavorite: checked })}
                       />
                     </div>
                   </TabsContent>

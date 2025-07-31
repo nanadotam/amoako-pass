@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Eye, EyeOff, Copy, Plus, Search, Grid3X3, List, MoreHorizontal } from "lucide-react"
+import { Eye, EyeOff, Copy, Plus, Search, Grid3X3, List, MoreHorizontal, Star, Heart, Filter, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { PasswordGenerator } from "@/components/password-generator"
 import { PasswordDetailModal } from "@/components/password-detail-modal"
 import { EditPasswordModal } from "@/components/edit-password-modal"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 
 const mockPasswords = [
   {
@@ -31,6 +31,7 @@ const mockPasswords = [
     notes: "Work development account with 2FA enabled",
     tags: ["work", "development", "important"],
     isCompromised: false,
+    isFavorite: true,
     twoFactorEnabled: true,
     url: "https://github.com",
     alternativeEmails: ["john.work@company.com"],
@@ -62,6 +63,7 @@ const mockPasswords = [
     notes: "Primary email account",
     tags: ["personal", "email", "important"],
     isCompromised: false,
+    isFavorite: false,
     twoFactorEnabled: true,
     url: "https://gmail.com",
     alternativeEmails: [],
@@ -90,6 +92,7 @@ const mockPasswords = [
     notes: "Family subscription account",
     tags: ["entertainment", "family"],
     isCompromised: false,
+    isFavorite: true,
     twoFactorEnabled: false,
     url: "https://netflix.com",
     alternativeEmails: ["family@doe.com"],
@@ -116,6 +119,7 @@ const mockPasswords = [
     notes: "Shopping account with saved payment methods",
     tags: ["shopping", "frequent"],
     isCompromised: false,
+    isFavorite: false,
     twoFactorEnabled: false,
     url: "https://amazon.com",
     alternativeEmails: [],
@@ -132,11 +136,14 @@ const mockPasswords = [
 ]
 
 const categories = ["All", "Development", "Email", "Entertainment", "Shopping", "Social", "Banking"]
+const securityFilters = ["All", "Strong", "Weak", "Compromised", "2FA Enabled"]
 
 export default function Dashboard() {
   const [passwords, setPasswords] = useState(mockPasswords)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
+  const [selectedSecurityFilter, setSelectedSecurityFilter] = useState("All")
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("list")
   const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set())
   const [showGenerator, setShowGenerator] = useState(false)
@@ -153,6 +160,23 @@ export default function Dashboard() {
       newVisible.add(id)
     }
     setVisiblePasswords(newVisible)
+  }
+
+  const toggleFavorite = (id: number, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation()
+    }
+    
+    const updatedPasswords = passwords.map(p => 
+      p.id === id ? { ...p, isFavorite: !p.isFavorite } : p
+    )
+    setPasswords(updatedPasswords)
+    
+    const password = passwords.find(p => p.id === id)
+    toast({
+      title: password?.isFavorite ? "Removed from favorites" : "Added to favorites",
+      description: `${password?.website} has been ${password?.isFavorite ? "removed from" : "added to"} your favorites.`,
+    })
   }
 
   const copyToClipboard = async (text: string, type: string) => {
@@ -211,8 +235,29 @@ export default function Dashboard() {
       password.website.toLowerCase().includes(searchQuery.toLowerCase()) ||
       password.username.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === "All" || password.category === selectedCategory
-    return matchesSearch && matchesCategory
+    const matchesFavorites = !showFavoritesOnly || password.isFavorite
+    
+    const matchesSecurity = (() => {
+      switch (selectedSecurityFilter) {
+        case "Strong":
+          return password.securityScore >= 80
+        case "Weak":
+          return password.securityScore < 60
+        case "Compromised":
+          return password.isCompromised
+        case "2FA Enabled":
+          return password.twoFactorEnabled
+        default:
+          return true
+      }
+    })()
+    
+    return matchesSearch && matchesCategory && matchesFavorites && matchesSecurity
   })
+
+  const favoritesCount = passwords.filter(p => p.isFavorite).length
+  const weakPasswordsCount = passwords.filter(p => p.securityScore < 60).length
+  const compromisedCount = passwords.filter(p => p.isCompromised).length
 
   return (
     <div className="min-h-screen">
@@ -223,58 +268,176 @@ export default function Dashboard() {
           <div className="flex-1">
             <h1 className="text-xl font-semibold">Password Vault</h1>
           </div>
-          <Button onClick={() => setShowGenerator(true)} size="sm">
-            <Plus className="size-4 mr-2" />
-            Generate
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => setShowGenerator(true)} size="sm">
+              <Plus className="size-4 mr-2" />
+              Generate
+            </Button>
+          </div>
         </div>
       </header>
 
       {/* Search and Filters */}
-      <div className="p-4 lg:p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
-            <Input
-              placeholder="Search passwords..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant={viewMode === "list" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-              className="lg:hidden"
-            >
-              <List className="size-4" />
-            </Button>
-            <Button
-              variant={viewMode === "grid" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              className="hidden lg:flex"
-            >
-              <Grid3X3 className="size-4" />
-            </Button>
-          </div>
+      <div className="p-4 lg:p-6 space-y-6">
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
+          <Input
+            placeholder="Search passwords..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
         </div>
 
-        {/* Category Filter */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {categories.map((category) => (
-            <Button
-              key={category}
-              variant={selectedCategory === category ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(category)}
-              className="whitespace-nowrap"
-            >
-              {category}
+        {/* Unified Dashboard */}
+        <div className="bg-card border rounded-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-semibold">Security Dashboard</h2>
+              <p className="text-sm text-muted-foreground">Monitor your password security and manage your vault</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant={showFavoritesOnly ? "default" : "outline"} 
+                size="sm"
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              >
+                <Heart className={`size-4 mr-2 ${showFavoritesOnly ? "fill-current" : ""}`} />
+                Favorites {favoritesCount > 0 && `(${favoritesCount})`}
+              </Button>
+              <Button variant="outline" size="sm">
+                View Full Report
+              </Button>
+            </div>
+          </div>
+          
+          {/* Security Metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-muted rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg">
+                  <Shield className="size-4 text-green-600" />
+                </div>
+                <span className="font-medium">Security Score</span>
+              </div>
+              <div className="flex items-end gap-2">
+                <span className="text-2xl font-bold text-green-600">85</span>
+                <span className="text-sm text-muted-foreground">/100</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Good security overall</p>
+            </div>
+
+            <div className="bg-muted rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-red-100 dark:bg-red-900/50 rounded-lg">
+                  <Heart className="size-4 text-red-600" />
+                </div>
+                <span className="font-medium">Favorites</span>
+              </div>
+              <div className="flex items-end gap-2">
+                <span className="text-2xl font-bold text-red-600">{favoritesCount}</span>
+                <span className="text-sm text-muted-foreground">passwords</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Quick access items</p>
+            </div>
+
+            <div className="bg-muted rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-yellow-100 dark:bg-yellow-900/50 rounded-lg">
+                  <Filter className="size-4 text-yellow-600" />
+                </div>
+                <span className="font-medium">Weak Passwords</span>
+              </div>
+              <div className="flex items-end gap-2">
+                <span className="text-2xl font-bold text-yellow-600">{weakPasswordsCount}</span>
+                <span className="text-sm text-muted-foreground">passwords</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Need strengthening</p>
+            </div>
+
+            <div className="bg-muted rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-orange-100 dark:bg-orange-900/50 rounded-lg">
+                  <Search className="size-4 text-orange-600" />
+                </div>
+                <span className="font-medium">Compromised</span>
+              </div>
+              <div className="flex items-end gap-2">
+                <span className="text-2xl font-bold text-orange-600">{compromisedCount}</span>
+                <span className="text-sm text-muted-foreground">passwords</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">In known breaches</p>
+            </div>
+          </div>
+
+          {/* Unified Filters */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-muted-foreground">Categories:</span>
+              <div className="flex gap-2 overflow-x-auto flex-1">
+                {categories.map((category) => (
+                  <Button
+                    key={category}
+                    variant={selectedCategory === category ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category)}
+                    className="whitespace-nowrap"
+                  >
+                    {category}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-muted-foreground">Security:</span>
+              <div className="flex gap-2 overflow-x-auto flex-1">
+                {securityFilters.map((filter) => (
+                  <Button
+                    key={filter}
+                    variant={selectedSecurityFilter === filter ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedSecurityFilter(filter)}
+                    className="whitespace-nowrap"
+                  >
+                    {filter}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t">
+            <Button variant="outline" size="sm" onClick={() => setSelectedSecurityFilter("Weak")}>
+              Fix Weak Passwords
             </Button>
-          ))}
+            <Button variant="outline" size="sm" onClick={() => setSelectedSecurityFilter("2FA Enabled")}>
+              Enable 2FA
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowGenerator(true)}>
+              Generate Strong Password
+            </Button>
+            <div className="flex gap-2 ml-auto">
+              <Button
+                variant={viewMode === "list" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="lg:hidden"
+              >
+                <List className="size-4" />
+              </Button>
+              <Button
+                variant={viewMode === "grid" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="hidden lg:flex"
+              >
+                <Grid3X3 className="size-4" />
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Password Cards */}
@@ -304,7 +467,17 @@ export default function Dashboard() {
                         }}
                       />
                       <div>
-                        <h3 className="font-semibold">{password.website}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{password.website}</h3>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="p-1 h-6 w-6"
+                            onClick={(e) => toggleFavorite(password.id, e)}
+                          >
+                            <Star className={`size-4 ${password.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
+                          </Button>
+                        </div>
                         <p className="text-sm text-muted-foreground">{password.username}</p>
                       </div>
                     </div>
@@ -315,6 +488,10 @@ export default function Dashboard() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleFavorite(password.id); }}>
+                          {password.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditPassword(password); }}>
                           Edit
                         </DropdownMenuItem>
@@ -334,6 +511,12 @@ export default function Dashboard() {
                       )}
                       {password.isCompromised && (
                         <Badge variant="destructive" className="text-xs">Risk</Badge>
+                      )}
+                      {password.isFavorite && (
+                        <Badge variant="outline" className="text-xs text-yellow-600">
+                          <Star className="size-3 mr-1 fill-current" />
+                          Favorite
+                        </Badge>
                       )}
                     </div>
                     <span className="text-xs text-muted-foreground">{password.lastUsed}</span>
@@ -364,6 +547,15 @@ export default function Dashboard() {
         {filteredPasswords.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No passwords found matching your criteria.</p>
+            {showFavoritesOnly && (
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={() => setShowFavoritesOnly(false)}
+              >
+                Show all passwords
+              </Button>
+            )}
           </div>
         )}
       </div>

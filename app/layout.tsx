@@ -7,9 +7,9 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 
 export const metadata: Metadata = {
-  title: "SecureVault - Password Manager",
-  description: "A secure, modern password manager",
-    generator: 'v0.dev'
+  title: "Amoako's Passwords - Password Manager",
+  description: "A secure, modern password manager for managing your digital credentials safely",
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({

@@ -1,6 +1,6 @@
 "use client"
 
-import { Shield, Wifi, Settings, Download, Upload, FolderOpen, Plus } from "lucide-react"
+import { Shield, Wifi, Settings, Download, Upload, FolderOpen, Plus, User } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -36,6 +36,11 @@ const navigation = [
     icon: FolderOpen,
   },
   {
+    title: "Profile",
+    url: "/profile",
+    icon: User,
+  },
+  {
     title: "Settings",
     url: "/settings",
     icon: Settings,
@@ -69,7 +74,7 @@ export function AppSidebar() {
                   <Shield className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">SecureVault</span>
+                  <span className="truncate font-semibold">Amoako's Passwords</span>
                   <span className="truncate text-xs">Password Manager</span>
                 </div>
               </Link>

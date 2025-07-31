@@ -17,6 +17,8 @@ func main() {
 	http.HandleFunc("/api/health", handlers.HealthCheck)
 	http.HandleFunc("/api/register", handlers.Register)
 	http.HandleFunc("/api/login", handlers.Login)
+	http.HandleFunc("/api/vault", handlers.GetPasswords)
+
 
 	log.Println("✅ Server running on http://localhost:8000")
 	log.Fatal(http.ListenAndServe(":8000", nil))
