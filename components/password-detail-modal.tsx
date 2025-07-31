@@ -156,7 +156,8 @@ export function PasswordDetailModal({
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => onEdit?.(password)}>
-            <Edit className="size-4" />
+            <Edit className="size-4 mr-1" />
+            Edit
           </Button>
           <Button variant="outline" size="sm" onClick={() => onDelete?.(password.id)}>
             <Trash2 className="size-4" />

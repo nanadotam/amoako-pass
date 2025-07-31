@@ -15,9 +15,10 @@ import { useMobile } from "@/hooks/use-mobile"
 interface PasswordGeneratorProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onPasswordGenerated?: (password: string) => void
 }
 
-export function PasswordGenerator({ open, onOpenChange }: PasswordGeneratorProps) {
+export function PasswordGenerator({ open, onOpenChange, onPasswordGenerated }: PasswordGeneratorProps) {
   const [length, setLength] = useState([16])
   const [includeUppercase, setIncludeUppercase] = useState(true)
   const [includeLowercase, setIncludeLowercase] = useState(true)
@@ -68,6 +69,18 @@ export function PasswordGenerator({ open, onOpenChange }: PasswordGeneratorProps
     }
   }
 
+  const usePassword = () => {
+    if (!password) return
+    
+    onPasswordGenerated?.(password)
+    onOpenChange(false)
+    
+    toast({
+      title: "Password used!",
+      description: "Generated password has been applied to the form.",
+    })
+  }
+
   const getStrength = () => {
     let score = 0
     if (length[0] >= 12) score += 1
@@ -97,9 +110,14 @@ export function PasswordGenerator({ open, onOpenChange }: PasswordGeneratorProps
             <Button variant="ghost" size="sm" onClick={generatePassword} disabled={!password}>
               <RefreshCw className="size-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={copyPassword} disabled={!password}>
-              <Copy className="size-4" />
-            </Button>
+                            <Button variant="ghost" size="sm" onClick={copyPassword} disabled={!password}>
+                  <Copy className="size-4" />
+                </Button>
+                {onPasswordGenerated && (
+                  <Button variant="default" size="sm" onClick={usePassword} disabled={!password}>
+                    Use Password
+                  </Button>
+                )}
           </div>
         </div>
 

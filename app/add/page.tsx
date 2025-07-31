@@ -506,7 +506,11 @@ export default function AddPassword() {
           </Card>
         </motion.div>
 
-        <PasswordGenerator open={showGenerator} onOpenChange={setShowGenerator} />
+        <PasswordGenerator 
+          open={showGenerator} 
+          onOpenChange={setShowGenerator}
+          onPasswordGenerated={(password) => setFormData({ ...formData, password })}
+        />
       </div>
     </div>
   )

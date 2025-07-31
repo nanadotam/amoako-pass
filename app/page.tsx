@@ -11,6 +11,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useToast } from "@/hooks/use-toast"
 import { PasswordGenerator } from "@/components/password-generator"
 import { PasswordDetailModal } from "@/components/password-detail-modal"
+import { EditPasswordModal } from "@/components/edit-password-modal"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 const mockPasswords = [
@@ -133,6 +134,7 @@ const mockPasswords = [
 const categories = ["All", "Development", "Email", "Entertainment", "Shopping", "Social", "Banking"]
 
 export default function Dashboard() {
+  const [passwords, setPasswords] = useState(mockPasswords)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [viewMode, setViewMode] = useState<"grid" | "list">("list")
@@ -140,6 +142,7 @@ export default function Dashboard() {
   const [showGenerator, setShowGenerator] = useState(false)
   const [selectedPassword, setSelectedPassword] = useState<typeof mockPasswords[0] | null>(null)
   const [showPasswordDetail, setShowPasswordDetail] = useState(false)
+  const [showEditPassword, setShowEditPassword] = useState(false)
   const { toast } = useToast()
 
   const togglePasswordVisibility = (id: number) => {
@@ -172,26 +175,38 @@ export default function Dashboard() {
     setSelectedPassword(password)
     setShowPasswordDetail(true)
     // Increment usage count (in real app, this would be handled by backend)
-    password.usageCount += 1
+    const updatedPasswords = passwords.map(p => 
+      p.id === password.id ? { ...p, usageCount: p.usageCount + 1, lastUsed: "Just now" } : p
+    )
+    setPasswords(updatedPasswords)
   }
 
   const handleEditPassword = (password: typeof mockPasswords[0]) => {
-    // Navigate to edit page or open edit modal
-    toast({
-      title: "Edit Password",
-      description: "Edit functionality would be implemented here",
-    })
+    setSelectedPassword(password)
+    setShowPasswordDetail(false)
+    setShowEditPassword(true)
+  }
+
+  const handleSavePassword = (updatedPassword: typeof mockPasswords[0]) => {
+    const updatedPasswords = passwords.map(p => 
+      p.id === updatedPassword.id ? updatedPassword : p
+    )
+    setPasswords(updatedPasswords)
+    setSelectedPassword(updatedPassword) // Update the selected password for the detail modal
   }
 
   const handleDeletePassword = (passwordId: number) => {
-    // Delete password (in real app, this would be handled by backend)
+    const updatedPasswords = passwords.filter(p => p.id !== passwordId)
+    setPasswords(updatedPasswords)
+    setShowPasswordDetail(false)
+    
     toast({
-      title: "Delete Password",
-      description: "Delete functionality would be implemented here",
+      title: "Password deleted",
+      description: "The password has been permanently removed.",
     })
   }
 
-  const filteredPasswords = mockPasswords.filter((password) => {
+  const filteredPasswords = passwords.filter((password) => {
     const matchesSearch =
       password.website.toLowerCase().includes(searchQuery.toLowerCase()) ||
       password.username.toLowerCase().includes(searchQuery.toLowerCase())
@@ -360,6 +375,12 @@ export default function Dashboard() {
         onOpenChange={setShowPasswordDetail}
         onEdit={handleEditPassword}
         onDelete={handleDeletePassword}
+      />
+      <EditPasswordModal
+        password={selectedPassword}
+        open={showEditPassword}
+        onOpenChange={setShowEditPassword}
+        onSave={handleSavePassword}
       />
     </div>
   )
