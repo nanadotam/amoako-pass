@@ -33,7 +33,7 @@ type User struct {
 // new struct for user creation
 // so waht does this do im guessing its a struct datatype for when a user is
 // logging in and insrting their details into the frontend, lets see
-tyoe UserRegistration struct {
+type UserRegistration struct {
 	Email string `json:"email" validate:"required,email"`
 	Username string `json:"username" validate:"required,min=3,max=25"`
 	Password string `json:"password" validate:"required,min=8"`
@@ -53,3 +53,16 @@ type ForgotPassword struct{
 	// im guessng if you also forget your master key we can send you an OTP to reset it
 	OTP string `json:"otp" validate:"required,min=6,max=6"`
 }
+
+type AuthResponse struct{
+	User User `json:"user"`
+	AccessToken string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+// type RefreshTokenRequest struct{
+// 	RefreshToken string `json:"refresh_token" validate:"required"`
+// }
+
+// type TwoFactorAuth struct{
+// 	Email string `json:"email" validate:"required,email"`
